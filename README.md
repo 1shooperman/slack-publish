@@ -8,6 +8,28 @@ Primary command style:
 codex publish foo.md my-slack-channel-foo
 ```
 
+## Create Slack App From Manifest
+
+Use this file:
+
+- `slack-app-manifest.yaml`
+
+Slack UI steps:
+
+1. Open `https://api.slack.com/apps`
+2. Click **Create New App**
+3. Select **From a manifest**
+4. Pick your workspace
+5. Paste the contents of `slack-app-manifest.yaml`
+6. Create app, then click **Install to Workspace**
+7. Copy the Bot User OAuth Token (`xoxb-...`)
+
+The manifest already includes the required bot scopes:
+
+- `chat:write`
+- `channels:read`
+- `groups:read`
+
 ## What Was Built
 
 - Skill definition and workflow:
