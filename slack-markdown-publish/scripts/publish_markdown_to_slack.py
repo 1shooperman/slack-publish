@@ -161,11 +161,60 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("markdown_file", help="Path to markdown file")
     parser.add_argument("channel", help="Slack channel name or channel ID")
     parser.add_argument(
+        "--env-file",
+        help="Optional path to a .env file containing SLACK_BOT_TOKEN",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Print converted Slack text instead of posting",
     )
     return parser.parse_args()
+
+
+def _parse_dotenv(content: str) -> dict[str, str]:
+    parsed: dict[str, str] = {}
+    for raw_line in content.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line[len("export ") :].strip()
+        if "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+            value = value[1:-1]
+        if key:
+            parsed[key] = value
+    return parsed
+
+
+def load_slack_token(markdown_path: Path, env_file: str | None) -> str | None:
+    token = os.environ.get("SLACK_BOT_TOKEN")
+    if token:
+        return token
+
+    candidate_files: list[Path] = []
+    if env_file:
+        candidate_files.append(Path(env_file).expanduser())
+    else:
+        cwd = Path.cwd()
+        candidate_files.extend([cwd / ".env", cwd / ".env.local"])
+        markdown_dir = markdown_path.resolve().parent
+        if markdown_dir != cwd:
+            candidate_files.extend([markdown_dir / ".env", markdown_dir / ".env.local"])
+
+    for candidate in candidate_files:
+        if not candidate.is_file():
+            continue
+        parsed = _parse_dotenv(candidate.read_text(encoding="utf-8"))
+        token = parsed.get("SLACK_BOT_TOKEN")
+        if token:
+            return token
+    return None
 
 
 def main() -> int:
@@ -185,9 +234,12 @@ def main() -> int:
         print(rendered)
         return 0
 
-    token = os.environ.get("SLACK_BOT_TOKEN")
+    token = load_slack_token(path, args.env_file)
     if not token:
-        print("Missing SLACK_BOT_TOKEN environment variable.", file=sys.stderr)
+        print(
+            "Missing SLACK_BOT_TOKEN. Set it in the environment or provide --env-file.",
+            file=sys.stderr,
+        )
         return 1
 
     try:

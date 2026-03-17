@@ -8,6 +8,8 @@ Primary command style:
 codex publish foo.md my-slack-channel-foo
 ```
 
+This repository now includes `AGENTS.md` so command-style prompts like the one above are routed to the Slack publishing skill.
+
 ## Create Slack App From Manifest
 
 Use this file:
@@ -60,6 +62,18 @@ Example:
 export SLACK_BOT_TOKEN='xoxb-...'
 ```
 
+If Codex is not inheriting shell environment variables in your runtime, the publisher script now also supports `.env` fallback:
+
+```bash
+echo "SLACK_BOT_TOKEN=xoxb-..." >> .env
+```
+
+or pass an explicit env file:
+
+```bash
+python3 slack-markdown-publish/scripts/publish_markdown_to_slack.py foo.md my-slack-channel-foo --env-file ~/.config/slack.env
+```
+
 ## Custom Build (Implemented Here)
 
 The script includes logic that simple configuration cannot provide on its own:
@@ -80,6 +94,12 @@ The script includes logic that simple configuration cannot provide on its own:
 
 ```bash
 codex publish foo.md my-slack-channel-foo
+```
+
+To force Codex to inherit your shell env without relying on `.env` files, you can also run:
+
+```bash
+codex -c shell_environment_policy.inherit=all publish foo.md my-slack-channel-foo
 ```
 
 ### Direct script usage

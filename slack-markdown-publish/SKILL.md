@@ -10,7 +10,7 @@ Use this skill to convert Markdown into Slack-compatible message text and publis
 ## Workflow
 
 1. Parse the user request and extract `<markdown-file>` and `<channel>` from command-style text like `codex publish foo.md my-slack-channel-foo`.
-2. Ensure `SLACK_BOT_TOKEN` exists in the environment before posting.
+2. Ensure `SLACK_BOT_TOKEN` is available from environment, or from `.env`/`.env.local` fallback.
 3. Run:
    `python3 scripts/publish_markdown_to_slack.py <markdown-file> <channel>`
 4. Report posting success including the resolved channel ID and message timestamp.
@@ -25,7 +25,7 @@ Use this skill to convert Markdown into Slack-compatible message text and publis
 
 ## Environment requirements
 
-- `SLACK_BOT_TOKEN` must be set.
+- `SLACK_BOT_TOKEN` must be set, or present in `.env` / `.env.local`.
 - Bot token scopes should include:
   - `chat:write`
   - `channels:read` for public channel lookup by name
@@ -42,4 +42,6 @@ Use this skill to convert Markdown into Slack-compatible message text and publis
     - links to `<url|label>`
     - inline `**bold**`, `*italic*`, `` `code` ``, and `~~strike~~`
   - Resolves channel name to ID when needed.
+  - Falls back to `.env` and `.env.local` when environment variables are not inherited.
+  - Supports `--env-file <path>` for an explicit token file.
   - Supports `--dry-run` to print rendered Slack text without posting.
