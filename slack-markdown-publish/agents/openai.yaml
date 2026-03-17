@@ -1,0 +1,4 @@
+interface:
+  display_name: "Slack Markdown Publish"
+  short_description: "Publish markdown to Slack as formatted message text"
+  default_prompt: "Publish foo.md to my-slack-channel-foo as a Slack-formatted message"
